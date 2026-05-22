@@ -349,6 +349,7 @@ textarea{resize:vertical}
       </div>
     </div>
     <button class="report-btn" onclick="openReport()">📊 Reporte del día</button>
+    <button class="report-btn" onclick="openSettings()" style="margin-top:6px">⚙️ Configuración y datos</button>
   </div>
 </div>
 
@@ -365,6 +366,45 @@ textarea{resize:vertical}
         <button class="btn btn-dark btn-sm" onclick="copyReport()">⎘ Copiar</button>
         <span class="copy-ok" id="report-copy-ok">✓ ¡Copiado!</span>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS MODAL ════════════════════════════════════════════ -->
+<div id="settings-overlay" onclick="closeSettings(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div class="report-modal" style="max-width:460px">
+    <div class="report-hdr">
+      <span class="report-title">⚙️ Configuración</span>
+      <button class="report-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="report-body">
+
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson);margin-bottom:6px">Notificaciones del pomodoro</div>
+        <p style="font-size:13px;color:var(--sepia);font-style:italic;margin-bottom:10px">Recibe una alerta cuando termina cada sesión, aunque la pantalla esté bloqueada.</p>
+        <p style="font-size:13px;color:var(--ink-mid);margin-bottom:10px" id="notif-status">Estado: verificando…</p>
+        <button class="btn btn-forest btn-sm" onclick="requestNotifPermission()" id="notif-btn" style="display:none">🔔 Activar notificaciones</button>
+      </div>
+
+      <div class="sep" style="margin:14px 0"></div>
+
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson);margin-bottom:6px">Exportar datos</div>
+        <p style="font-size:13px;color:var(--sepia);font-style:italic;margin-bottom:10px">Descarga una copia de todas tus metas, tareas, sesiones y XP como archivo JSON. Úsalo como respaldo o para transferir a otro dispositivo.</p>
+        <button class="btn btn-forest btn-sm" onclick="exportData()">⬇ Exportar como JSON</button>
+      </div>
+
+      <div class="sep" style="margin:14px 0"></div>
+
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson);margin-bottom:6px">Importar datos</div>
+        <p style="font-size:13px;color:var(--sepia);font-style:italic;margin-bottom:10px">Restaura desde un backup JSON. <strong style="color:var(--crimson)">Atención:</strong> reemplaza todos los datos actuales.</p>
+        <label class="btn btn-navy btn-sm" style="cursor:pointer;display:inline-block">
+          ⬆ Importar JSON
+          <input type="file" accept=".json" style="display:none" onchange="importData(this.files[0]);this.value=''"/>
+        </label>
+      </div>
+
     </div>
   </div>
 </div>
@@ -440,7 +480,7 @@ textarea{resize:vertical}
     <div class="sep"></div>
     <div class="stitle">🎯 Objetivo</div>
     <div class="fg"><label class="flabel">Objetivo de la sesión <span class="fhint">(una tarea alcanzable)</span></label>
-      <textarea id="su-goal" rows="2" placeholder="¿Cuál es la UNA cosa que querés lograr?"></textarea></div>
+      <textarea id="su-goal" rows="2" placeholder="¿Cuál es la UNA cosa que quieres lograr?"></textarea></div>
     <div class="grid3">
       <div class="fg"><label class="flabel">Pasos preparatorios</label>
         <div id="prep-list" class="cl-list"></div>
@@ -494,10 +534,10 @@ textarea{resize:vertical}
       <div class="attn-box t-wide" id="t-task-wrap" style="display:none"><div class="box-lbl" style="color:#1A3A5C">Pasos de la tarea</div><div id="t-task-list" class="t-cl"></div></div>
       <!-- Today's tasks to tick off -->
       <div class="session-tasks-box t-wide" id="session-tasks-box" style="display:none">
-        <div class="box-lbl" style="color:#2D5A3D;margin-bottom:8px">Tareas de hoy — tildá al completar</div>
+        <div class="box-lbl" style="color:#2D5A3D;margin-bottom:8px">Tareas de hoy — marca cuando completes</div>
         <div id="session-tasks-list"></div>
       </div>
-      <div class="ideas-box t-wide"><div class="box-lbl" style="color:#2D5A3D">Ideas emergentes</div><textarea id="su-ideas-timer" rows="3" placeholder="Capturá ideas mientras surgen…"></textarea></div>
+      <div class="ideas-box t-wide"><div class="box-lbl" style="color:#2D5A3D">Ideas emergentes</div><textarea id="su-ideas-timer" rows="3" placeholder="Captura ideas mientras surgen…"></textarea></div>
       <div class="t-wide"><label class="flabel">Distracciones / Cogniciones</label><textarea id="su-dist" rows="3" placeholder="Distracciones, pensamientos intrusivos…"></textarea></div>
       <button class="btn btn-navy" onclick="endSession()">🔮 Terminar sesión y reflexionar</button>
     </div>
@@ -505,8 +545,8 @@ textarea{resize:vertical}
 
   <div class="panel" id="tab-reflect">
     <div class="stitle">🔮 Reflexión</div>
-    <div class="fg"><label class="flabel">¿Qué logré?</label><textarea id="ref-achieve" rows="3" placeholder="Describí lo que lograste…"></textarea></div>
-    <div class="fg"><label class="flabel">¿Queda algo pendiente?</label><textarea id="ref-missed" rows="3" placeholder="Tareas sin terminar o diferidas…"></textarea></div>
+    <div class="fg"><label class="flabel">¿Qué logré?</label><textarea id="ref-achieve" rows="3" placeholder="Describe lo que lograste…"></textarea></div>
+    <div class="fg"><label class="flabel">¿Queda algo pendiente?</label><textarea id="ref-missed" rows="3" placeholder="Tareas sin terminar o pendientes…"></textarea></div>
     <div class="fg"><label class="flabel">¿Podría mejorar algo?</label><textarea id="ref-improve" rows="3" placeholder="Reflexiones sobre proceso, estrategia, foco…"></textarea></div>
     <div class="sep"></div>
     <div class="stitle">✅ Compromisos</div>
@@ -522,7 +562,7 @@ textarea{resize:vertical}
       <button class="btn btn-crimson" onclick="saveSession()">💾 Guardar en archivo</button>
     </div>
     <div class="save-confirm" id="save-confirm">✅ ¡Sesión guardada en el archivo!</div>
-    <textarea class="session-log-out" id="session-log-out" rows="14" readonly placeholder="Hacé clic en 'Generar registro'…"></textarea>
+    <textarea class="session-log-out" id="session-log-out" rows="14" readonly placeholder="Haz clic en 'Generar registro'…"></textarea>
     <div class="copy-row">
       <button class="btn btn-dark btn-sm" onclick="copyLog()">⎘ Copiar</button>
       <span class="copy-ok" id="copy-ok">✓ ¡Copiado!</span>
@@ -790,7 +830,7 @@ function deleteTask(id){
 function renderMetasTab(){
   const container=document.getElementById('metas-list');container.innerHTML='';
   if(!metas.length){
-    container.innerHTML='<div style="font-size:14px;font-style:italic;color:var(--sepia);padding:16px 0;text-align:center">No hay metas aún. Creá la primera arriba.</div>';
+    container.innerHTML='<div style="font-size:14px;font-style:italic;color:var(--sepia);padding:16px 0;text-align:center">No hay metas aún. Crea la primera arriba.</div>';
     return;
   }
   metas.forEach(meta=>container.appendChild(buildMetaSection(meta)));
@@ -1026,8 +1066,8 @@ function updatePrizeName(id,v){const p=PRIZES.find(p=>p.id===id);if(p){p.name=v;
 function updatePrizeCost(id,v){const p=PRIZES.find(p=>p.id===id);if(p){p.cost=parseInt(v)||0;lsSave('pq_prizes2',PRIZES);updateHomeScreen();renderPrizesScreen();}}
 function redeemPrize(id){
   const prize=PRIZES.find(p=>p.id===id);if(!prize)return;
-  const bal=balance();if(bal<prize.cost){showToast(`Necesitás ${prize.cost-bal} XP más`);return;}
-  if(!confirm(`¿Canjear "${prize.name}" por ${prize.cost} XP?\nBalance quedaría en ${bal-prize.cost} XP.`))return;
+  const bal=balance();if(bal<prize.cost){showToast(`Necesitas ${prize.cost-bal} XP más`);return;}
+  if(!confirm(`¿Canjear "${prize.name}" por ${prize.cost} XP?\nTu balance quedaría en ${bal-prize.cost} XP.`))return;
   spentXP+=prize.cost;
   spendLog.unshift({id:Date.now(),prizeName:prize.name,cost:prize.cost,date:new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})});
   lsSave('pq_spent',spentXP);lsSave('pq_spendlog',spendLog);
@@ -1041,7 +1081,7 @@ function renderPrizesScreen(){
   document.getElementById('prizes-spent-lbl').textContent=`${spentXP} XP gastados`;
   document.getElementById('prizes-pbar').style.width=(earnedXP>0?Math.min(100,(spentXP/earnedXP)*100):0)+'%';
   const el=document.getElementById('prizes-list');el.innerHTML='';
-  if(!PRIZES.length){el.innerHTML='<div style="font-size:14px;font-style:italic;color:var(--sepia);padding:12px 0">No hay premios. Agregá uno arriba.</div>';return;}
+  if(!PRIZES.length){el.innerHTML='<div style="font-size:14px;font-style:italic;color:var(--sepia);padding:12px 0">No hay premios. Agrega uno arriba.</div>';return;}
   [...PRIZES].sort((a,b)=>a.cost-b.cost).forEach(p=>{
     const can=bal>=p.cost;
     const item=document.createElement('div');item.className='prize-item'+(can?' redeemable':'');
@@ -1071,7 +1111,7 @@ function goTab(id){document.querySelectorAll('.panel').forEach(p=>p.classList.re
 function commitSession(){
   const time=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   sessionStartTime=time;sessionXPLog=[];
-  const note=document.getElementById('commit-note');note.textContent=`✅ Comprometida a las ${time}`;note.style.display='inline';
+  note.textContent=`✅ Sesión iniciada a las ${time}`;note.style.display='inline';
   const goal=document.getElementById('su-goal').value.trim(),attn=document.getElementById('su-attn').value.trim();
   document.getElementById('goal-reminder').style.display=goal?'block':'none';document.getElementById('goal-disp').textContent=goal;
   document.getElementById('attn-reminder').style.display=attn?'block':'none';document.getElementById('attn-disp').textContent=attn;
@@ -1099,7 +1139,7 @@ function checkFinish(){
   const banner=document.getElementById('finish-banner');
   if(document.getElementById('ck-finish').checked){
     const prize=nextPrize();const bal=balance();banner.style.display='block';banner.className='prize-banner';
-    banner.textContent=`🎉 ¡Sesión completada! Balance: ${bal} XP. ${bal>=prize.cost&&prize.cost>0?`¡Podés canjear: ${prize.name}!`:`Seguí adelante — ${prize.name} a ${prize.cost} XP.`}`;
+    banner.textContent=`🎉 ¡Sesión completada! Balance: ${bal} XP. ${bal>=prize.cost&&prize.cost>0?`¡Puedes canjear: ${prize.name}!`:`Sigue adelante — ${prize.name} a ${prize.cost} XP.`}`;
   }else banner.style.display='none';
 }
 
@@ -1160,7 +1200,18 @@ function switchMode(m){
 }
 function setRunning(on){
   if(on){endTime=Date.now()+pausedRemaining*1000;running=true;document.getElementById('btn-play').textContent='⏸ Pausar';
-    timerInterval=setInterval(()=>{const rem=getRem();if(rem<=0){pausedRemaining=0;clearInterval(timerInterval);timerInterval=null;running=false;document.getElementById('btn-play').textContent='▶ Iniciar';if(mode==='work'){pomCount++;document.getElementById('t-pom').textContent=pomCount;}playBell();}updateDisplay();},500);
+    // Request notification permission silently on first start
+    if('Notification' in window&&Notification.permission==='default') Notification.requestPermission();
+    timerInterval=setInterval(()=>{const rem=getRem();if(rem<=0){
+      pausedRemaining=0;clearInterval(timerInterval);timerInterval=null;running=false;
+      document.getElementById('btn-play').textContent='▶ Iniciar';
+      if(mode==='work'){
+        pomCount++;document.getElementById('t-pom').textContent=pomCount;
+        sendNotif('🍅 ¡Pomodoro completado!',`Llevas ${pomCount} pomodoro${pomCount!==1?'s':''}. ¡Date un descanso!`);
+      }else{
+        sendNotif('⚔️ ¡Descansa terminado!','Hora de volver al trabajo.');
+      }
+      playBell();}updateDisplay();},500);
   }else{pausedRemaining=getRem();clearInterval(timerInterval);timerInterval=null;running=false;document.getElementById('btn-play').textContent='▶ Continuar';}
   updateDisplay();
 }
@@ -1267,6 +1318,104 @@ function deleteSession(id){if(!confirm('¿Eliminar esta sesión?'))return;const 
 // UTIL
 // ═══════════════════════════════════════════════════════════════════
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ═══════════════════════════════════════════════════════════════════
+// SETTINGS — EXPORT / IMPORT / NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════════════
+function openSettings(){
+  updateNotifStatus();
+  const el=document.getElementById('settings-overlay');
+  el.style.display='flex';
+}
+function closeSettings(e){
+  if(!e||e.target===document.getElementById('settings-overlay'))
+    document.getElementById('settings-overlay').style.display='none';
+}
+
+// ── Export ─────────────────────────────────────────────────────────
+function exportData(){
+  const data={
+    version:2,
+    exportedAt:new Date().toISOString(),
+    metas,tasks,prizes:PRIZES,
+    earnedXP,spentXP,xpLog,spendLog,
+    sessions:lsGet('pq_sessions',[])
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`phd-quest-backup-${new Date().toLocaleDateString('de-DE').replace(/\./g,'-')}.json`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('✅  Backup exportado','small');
+}
+
+// ── Import ─────────────────────────────────────────────────────────
+function importData(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.version)throw new Error('Formato no reconocido');
+      const fechaStr=new Date(data.exportedAt).toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'});
+      if(!confirm(`¿Importar los datos del ${fechaStr}?\n\nEsto reemplazará todas las metas, tareas, sesiones y XP actuales. Esta acción no se puede deshacer.`))return;
+      if(data.metas!==undefined){metas=data.metas;lsSave('pq_metas',metas);}
+      if(data.tasks!==undefined){tasks=data.tasks;lsSave('pq_tasks',tasks);}
+      if(data.prizes!==undefined){PRIZES=data.prizes;lsSave('pq_prizes2',PRIZES);}
+      if(data.earnedXP!==undefined){earnedXP=data.earnedXP;lsSave('pq_earned',earnedXP);}
+      if(data.spentXP!==undefined){spentXP=data.spentXP;lsSave('pq_spent',spentXP);}
+      if(data.xpLog!==undefined){xpLog=data.xpLog;lsSave('pq_xplog',xpLog);}
+      if(data.spendLog!==undefined){spendLog=data.spendLog;lsSave('pq_spendlog',spendLog);}
+      if(data.sessions!==undefined){lsSave('pq_sessions',data.sessions);}
+      updateHomeScreen();
+      closeSettings();
+      showToast('✅  Datos importados\ncorrectamente','big');
+    }catch(err){
+      alert('Error al importar: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Notifications ──────────────────────────────────────────────────
+function updateNotifStatus(){
+  const btn=document.getElementById('notif-btn');
+  const status=document.getElementById('notif-status');
+  if(!('Notification' in window)){
+    status.textContent='Tu navegador no soporta notificaciones.';
+    status.style.color='var(--sepia)';
+    if(btn)btn.style.display='none';
+    return;
+  }
+  if(Notification.permission==='granted'){
+    status.textContent='✅ Notificaciones activadas. Recibirás una alerta al terminar cada pomodoro.';
+    status.style.color='var(--forest)';
+    if(btn)btn.style.display='none';
+  }else if(Notification.permission==='denied'){
+    status.textContent='❌ Notificaciones bloqueadas en el navegador. Para activarlas, ve a Configuración del navegador → Permisos del sitio → Notificaciones.';
+    status.style.color='var(--crimson)';
+    if(btn)btn.style.display='none';
+  }else{
+    status.textContent='Estado: no activadas aún.';
+    status.style.color='var(--sepia)';
+    if(btn)btn.style.display='inline-block';
+  }
+}
+
+async function requestNotifPermission(){
+  if(!('Notification' in window))return;
+  const result=await Notification.requestPermission();
+  updateNotifStatus();
+  if(result==='granted')showToast('🔔  Notificaciones activadas','small');
+}
+
+function sendNotif(title,body){
+  if('Notification' in window&&Notification.permission==='granted'){
+    try{new Notification(title,{body,icon:'./icon-192.png',silent:false});}catch(e){}
+  }
+}
 </script>
 </body>
 </html>
