@@ -292,6 +292,27 @@ textarea{resize:vertical}
 .arch-achieved{font-size:14px;color:var(--ink);padding:8px 14px;background:rgba(45,90,61,.05);border-bottom:1px solid rgba(196,164,107,.2);line-height:1.5;font-style:italic}
 .arch-log{font-family:'Courier New',monospace;font-size:11px;line-height:1.6;color:var(--ink);padding:12px 14px;white-space:pre;overflow-x:auto;max-height:320px;overflow-y:auto;background:rgba(255,255,255,.35)}
 .arch-foot{display:flex;justify-content:flex-end;padding:8px 14px;gap:8px;border-top:1px solid rgba(196,164,107,.2);background:rgba(255,255,255,.2)}
+/* ══ STATS SCREEN ════════════════════════════════════════════════ */
+#screen-stats{background:var(--parch)}
+.stats-body{padding:18px;max-width:860px;margin:0 auto}
+.stats-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.stat-card{background:rgba(255,255,255,.3);border:1px solid var(--border);border-radius:3px;padding:12px 6px;text-align:center}
+.stat-card-num{font-family:'Cinzel',serif;font-size:24px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:4px}
+.stat-card-lbl{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.09em;text-transform:uppercase;color:var(--sepia);line-height:1.3}
+.stat-card.highlight{background:rgba(184,150,12,.1);border-color:var(--gold)}
+.stat-card.highlight .stat-card-num{color:var(--gold)}
+.chart-box{background:rgba(255,255,255,.25);border:1px solid var(--border);border-radius:3px;padding:14px 12px;margin-bottom:4px}
+.chart-box svg{width:100%;height:auto;display:block}
+.chart-empty{font-size:13px;font-style:italic;color:var(--sepia);text-align:center;padding:20px 0}
+.meta-prog-row{margin-bottom:12px}
+.meta-prog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:8px}
+.meta-prog-name{font-size:14px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta-prog-xp{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);white-space:nowrap;flex-shrink:0}
+.meta-prog-track{height:8px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden;flex:1}
+.meta-prog-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.meta-prog-pct{font-family:'Cinzel',serif;font-size:10px;color:var(--sepia);white-space:nowrap;min-width:38px;text-align:right;flex-shrink:0}
+.meta-prog-bar-row{display:flex;align-items:center;gap:8px}
+.stats-empty-state{text-align:center;padding:40px 20px;font-size:15px;font-style:italic;color:var(--sepia);line-height:1.8}
 </style>
 </head>
 <body>
@@ -344,6 +365,14 @@ textarea{resize:vertical}
         <div class="nav-text">
           <div class="nav-title">Ver archivo</div>
           <div class="nav-sub" id="archive-sub">0 sesiones guardadas</div>
+        </div>
+        <div class="nav-arrow">›</div>
+      </div>
+      <div class="nav-card" onclick="openStats()">
+        <div class="nav-icon">📈</div>
+        <div class="nav-text">
+          <div class="nav-title">Estadísticas</div>
+          <div class="nav-sub" id="stats-sub">Tu progreso en el tiempo</div>
         </div>
         <div class="nav-arrow">›</div>
       </div>
@@ -601,6 +630,48 @@ textarea{resize:vertical}
   </div>
 </div>
 
+<!-- ══ STATS ══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-stats">
+  <div class="sub-hdr">
+    <button class="back-btn" onclick="goHome()">← Inicio</button>
+    <span class="sub-hdr-title">Estadísticas</span>
+    <div style="width:70px"></div>
+  </div>
+  <div class="stats-body">
+    <!-- Summary -->
+    <div class="stats-summary">
+      <div class="stat-card highlight">
+        <div class="stat-card-num" id="st-xp">0</div>
+        <div class="stat-card-lbl">XP ganados</div>
+      </div>
+      <div class="stat-card" id="st-streak-card">
+        <div class="stat-card-num" id="st-streak">0</div>
+        <div class="stat-card-lbl">Días seguidos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" id="st-tasks-done">0</div>
+        <div class="stat-card-lbl">Tareas completadas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" id="st-poms">0</div>
+        <div class="stat-card-lbl">Pomodoros</div>
+      </div>
+    </div>
+
+    <div class="stitle" style="margin-top:0">XP ganado — últimas 8 semanas</div>
+    <div class="chart-box" id="chart-xp-week"></div>
+
+    <div class="stitle">Progreso por meta</div>
+    <div id="stats-meta-progress"></div>
+
+    <div class="stitle">Pomodoros — últimos 14 días</div>
+    <div class="chart-box" id="chart-pom-day"></div>
+
+    <div class="stitle">XP por meta</div>
+    <div class="chart-box" id="chart-xp-meta"></div>
+  </div>
+</div>
+
 <!-- ══ ARCHIVE ════════════════════════════════════════════════════ -->
 <div class="screen" id="screen-archive">
   <div class="arch-hdr">
@@ -686,6 +757,7 @@ function openTracker(){showScreen('tracker');}
 function openArchive(){renderArchive();showScreen('archive');}
 function openPlan(){renderPlanScreen();showScreen('plan');}
 function openPrizes(){renderPrizesScreen();showScreen('prizes');}
+function openStats(){renderStats();showScreen('stats');}
 
 function updateHomeScreen(){
   const bal=balance();
@@ -1313,6 +1385,177 @@ function buildArchCard(s){
   card.appendChild(hdr);card.appendChild(body);return card;
 }
 function deleteSession(id){if(!confirm('¿Eliminar esta sesión?'))return;const sessions=lsGet('pq_sessions',[]).filter(s=>s.id!==id);lsSave('pq_sessions',sessions);renderArchive();updateHomeScreen();}
+
+// ═══════════════════════════════════════════════════════════════════
+// STATISTICS
+// ═══════════════════════════════════════════════════════════════════
+function renderStats(){
+  const sessions=lsGet('pq_sessions',[]);
+  const doneTasks=tasks.filter(t=>t.done);
+  const totalPoms=sessions.reduce((s,e)=>s+e.pomodoros,0);
+  const streak=getStreak();
+
+  // Summary cards
+  document.getElementById('st-xp').textContent=earnedXP;
+  const streakEl=document.getElementById('st-streak');
+  streakEl.textContent=streak+(streak>=7?' 🔥🔥':streak>=3?' 🔥':'');
+  document.getElementById('st-streak-card').className='stat-card'+(streak>=3?' highlight':'');
+  document.getElementById('st-tasks-done').textContent=doneTasks.length;
+  document.getElementById('st-poms').textContent=totalPoms;
+
+  // Update home stats sub
+  document.getElementById('stats-sub').textContent=
+    earnedXP>0?`${earnedXP} XP · ${doneTasks.length} tareas completadas`:'Tu progreso en el tiempo';
+
+  // Charts
+  renderXPByWeek();
+  renderMetaProgress();
+  renderPomsByDay();
+  renderXPByMeta();
+}
+
+// ── Streak ──────────────────────────────────────────────────────────
+function getStreak(){
+  const doneDates=new Set(
+    tasks.filter(t=>t.done&&t.doneAt)
+      .map(t=>new Date(t.doneAt).toLocaleDateString('de-DE'))
+  );
+  const sessions=lsGet('pq_sessions',[]);
+  sessions.forEach(s=>{if(s.savedAt)doneDates.add(new Date(s.savedAt).toLocaleDateString('de-DE'));});
+
+  const today=new Date();today.setHours(0,0,0,0);
+  let check=new Date(today),streak=0;
+  for(let i=0;i<365;i++){
+    if(doneDates.has(check.toLocaleDateString('de-DE'))){
+      streak++;check.setDate(check.getDate()-1);
+    }else if(i===0){
+      // No activity today — check from yesterday
+      check.setDate(check.getDate()-1);
+    }else break;
+  }
+  return streak;
+}
+
+// ── XP por semana (últimas 8) ───────────────────────────────────────
+function renderXPByWeek(){
+  const el=document.getElementById('chart-xp-week');
+  const now=new Date();now.setHours(0,0,0,0);
+  const data=[];
+  for(let w=7;w>=0;w--){
+    const wStart=new Date(now);
+    const dayOfWeek=wStart.getDay()||7; // Mon=1..Sun=7
+    wStart.setDate(wStart.getDate()-dayOfWeek+1-w*7); // Monday of week
+    const wEnd=new Date(wStart);wEnd.setDate(wStart.getDate()+7);
+    const xp=tasks.filter(t=>t.done&&t.doneAt)
+      .filter(t=>{const d=new Date(t.doneAt);return d>=wStart&&d<wEnd;})
+      .reduce((s,t)=>s+t.xp,0);
+    const lbl=w===0?'Esta sem.':wStart.toLocaleDateString('es-CL',{day:'numeric',month:'short'}).replace('.','');
+    data.push({label:lbl,value:xp,color:'var(--gold)'});
+  }
+  if(data.every(d=>d.value===0)){el.innerHTML='<div class="chart-empty">Completa tareas para ver tu XP semanal aquí.</div>';return;}
+  el.innerHTML=buildBarChartSVG(data,{barColor:'var(--gold)',highlightLast:true});
+}
+
+// ── Pomodoros por día (últimos 14) ──────────────────────────────────
+function renderPomsByDay(){
+  const el=document.getElementById('chart-pom-day');
+  const sessions=lsGet('pq_sessions',[]);
+  const now=new Date();now.setHours(0,0,0,0);
+  const data=[];
+  for(let d=13;d>=0;d--){
+    const day=new Date(now);day.setDate(now.getDate()-d);
+    const dayEnd=new Date(day);dayEnd.setDate(day.getDate()+1);
+    const poms=sessions.filter(s=>{
+      const sd=new Date(s.savedAt);return sd>=day&&sd<dayEnd;
+    }).reduce((s,sess)=>s+sess.pomodoros,0);
+    const lbl=d===0?'Hoy':d===1?'Ayer':day.toLocaleDateString('es-CL',{day:'numeric',month:'short'}).replace('.','');
+    data.push({label:lbl,value:poms,color:'var(--crimson)'});
+  }
+  if(data.every(d=>d.value===0)){el.innerHTML='<div class="chart-empty">Guarda sesiones para ver tus pomodoros aquí.</div>';return;}
+  el.innerHTML=buildBarChartSVG(data,{barColor:'var(--crimson)',highlightLast:true,skipLabels:2});
+}
+
+// ── Progreso por meta ───────────────────────────────────────────────
+function renderMetaProgress(){
+  const el=document.getElementById('stats-meta-progress');
+  if(!metas.length){el.innerHTML='<div class="chart-empty" style="padding:10px 0">Crea metas para ver el progreso aquí.</div>';return;}
+  const colorMap={crimson:'var(--crimson)',navy:'var(--navy)',forest:'var(--forest)',gold:'var(--gold)'};
+  el.innerHTML='';
+  metas.forEach(meta=>{
+    const mt=tasks.filter(t=>t.metaId===meta.id);
+    const done=mt.filter(t=>t.done).length;
+    const total=mt.length;
+    const pct=total?Math.round((done/total)*100):0;
+    const xpEarned=mt.filter(t=>t.done).reduce((s,t)=>s+t.xp,0);
+    const color=colorMap[meta.color]||'var(--sepia)';
+    const row=document.createElement('div');row.className='meta-prog-row';
+    row.innerHTML=`
+      <div class="meta-prog-header">
+        <span class="meta-prog-name">${meta.emoji} ${esc(meta.title)}</span>
+        <span class="meta-prog-xp">${xpEarned} XP</span>
+      </div>
+      <div class="meta-prog-bar-row">
+        <div class="meta-prog-track">
+          <div class="meta-prog-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <span class="meta-prog-pct">${done}/${total} · ${pct}%</span>
+      </div>`;
+    el.appendChild(row);
+  });
+}
+
+// ── XP por meta (bar chart) ─────────────────────────────────────────
+function renderXPByMeta(){
+  const el=document.getElementById('chart-xp-meta');
+  if(!metas.length){el.innerHTML='<div class="chart-empty">Crea metas para ver su XP aquí.</div>';return;}
+  const colorMap={crimson:'#8B1A1A',navy:'#1A3A5C',forest:'#2D5A3D',gold:'#b8960c'};
+  const data=metas.map(meta=>{
+    const xp=tasks.filter(t=>t.metaId===meta.id&&t.done).reduce((s,t)=>s+t.xp,0);
+    return{label:meta.emoji+' '+meta.title.split(' ').slice(0,2).join(' '),value:xp,color:colorMap[meta.color]||'var(--sepia)'};
+  }).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
+  if(!data.length){el.innerHTML='<div class="chart-empty">Completa tareas para ver XP por meta.</div>';return;}
+  el.innerHTML=buildBarChartSVG(data,{multiColor:true});
+}
+
+// ── SVG Bar Chart Builder ───────────────────────────────────────────
+function buildBarChartSVG(data,opts={}){
+  const W=400,H=150;
+  const PAD={t:22,r:6,b:30,l:6};
+  const cW=W-PAD.l-PAD.r,cH=H-PAD.t-PAD.b;
+  const n=data.length;
+  const maxVal=Math.max(...data.map(d=>d.value),1);
+  const slot=cW/n;
+  const barW=Math.min(slot*0.65,36);
+  const skipLabels=opts.skipLabels||1;
+
+  let bars='',vals='',lbls='';
+  data.forEach((d,i)=>{
+    const cx=PAD.l+slot*i+slot/2;
+    const barH=Math.max(d.value>0?3:0,(d.value/maxVal)*cH);
+    const x=cx-barW/2;
+    const y=PAD.t+cH-barH;
+    const isLast=i===n-1;
+    const color=opts.multiColor?d.color:(opts.highlightLast&&isLast?d.color:d.color||'var(--gold)');
+    const opacity=opts.highlightLast&&!isLast?'0.6':'1';
+
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${color}" opacity="${opacity}" rx="2"/>`;
+
+    if(d.value>0){
+      vals+=`<text x="${cx.toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--sepia)" font-family="'Cinzel',serif">${d.value}</text>`;
+    }
+
+    // Label: show every Nth, always show first and last
+    if(i===0||i===n-1||i%skipLabels===0){
+      const shortLbl=d.label.length>8?d.label.substring(0,8)+'…':d.label;
+      lbls+=`<text x="${cx.toFixed(1)}" y="${(PAD.t+cH+16).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--sepia)">${shortLbl}</text>`;
+    }
+  });
+
+  // Baseline
+  const baseline=`<line x1="${PAD.l}" y1="${PAD.t+cH}" x2="${W-PAD.r}" y2="${PAD.t+cH}" stroke="var(--border)" stroke-width="1" opacity="0.5"/>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${baseline}${bars}${vals}${lbls}</svg>`;
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // UTIL
